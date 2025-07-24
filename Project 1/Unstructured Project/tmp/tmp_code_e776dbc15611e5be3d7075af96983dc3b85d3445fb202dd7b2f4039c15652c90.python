@@ -1,0 +1,74 @@
+import numpy as np
+from PIL import Image, ImageDraw
+import imageio
+
+def is_valid_move(grid, row, col, num):
+    for x in range(3):
+        if grid[row][x] == num or grid[x][col] == num:
+            return False
+    return True
+
+def solve_sudoku(grid, steps):
+    empty = find_empty_location(grid)
+    if not empty:
+        steps.append(np.copy(grid))  # Append the solved grid
+        return True
+    
+    row, col = empty
+    for num in range(1, 4):
+        if is_valid_move(grid, row, col, num):
+            grid[row][col] = num
+            steps.append(np.copy(grid))  # Store each step
+            if solve_sudoku(grid, steps):
+                return True
+            grid[row][col] = 0
+    return False
+
+def find_empty_location(grid):
+    for i in range(3):
+        for j in range(3):
+            if grid[i][j] == 0:
+                return (i, j)
+    return None
+
+def create_gif(steps, filename):
+    images = []
+    for step in steps:
+        img = Image.new('RGB', (300, 300), color=(255, 255, 255))
+        d = ImageDraw.Draw(img)
+        
+        for i in range(3):
+            for j in range(3):
+                d.text((j * 100 + 40, i * 100 + 30), str(step[i][j]), fill=(0, 0, 0))
+        
+        images.append(img)
+    
+    imageio.mimsave(filename, images, duration=1)
+
+# Sample 3x3 sudoku grids (0 represents empty cells)
+sudoku_grids = [
+    [
+        [1, 0, 0],
+        [0, 0, 0],
+        [0, 2, 0]
+    ],
+    [
+        [0, 0, 3],
+        [1, 2, 0],
+        [0, 0, 1]
+    ],
+    [
+        [3, 0, 0],
+        [0, 0, 2],
+        [1, 0, 0]
+    ]
+]
+
+# Attempt to solve the Sudoku for each test case and create a GIF
+for idx, sudoku_grid in enumerate(sudoku_grids):
+    steps = []  # To capture the solving steps
+    if solve_sudoku(sudoku_grid, steps):
+        create_gif(steps, f'output_{idx + 1}.gif')
+        print(f"Sudoku solved for case {idx + 1} and GIF created as output_{idx + 1}.gif.")
+    else:
+        print(f"No solution exists for the Sudoku case {idx + 1}.")

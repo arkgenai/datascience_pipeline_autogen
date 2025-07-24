@@ -1,0 +1,57 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import imageio
+
+def is_safe(maze, x, y):
+    return 0 <= x < len(maze) and 0 <= y < len(maze[0]) and maze[x][y] == 1
+
+def solve_maze_util(maze, x, y, solution, paths):
+    if x == len(maze)-1 and y == len(maze[0])-1:
+        solution[x][y] = 1
+        paths.append(solution.copy())
+        return True
+    
+    if is_safe(maze, x, y):
+        solution[x][y] = 1
+        if solve_maze_util(maze, x + 1, y, solution, paths):
+            return True
+        if solve_maze_util(maze, x, y + 1, solution, paths):
+            return True
+        solution[x][y] = 0
+    return False
+
+def solve_maze(maze):
+    solution = np.zeros_like(maze)
+    paths = []
+    solve_maze_util(maze, 0, 0, solution, paths)
+    generate_gif(paths)
+    return paths
+
+def generate_gif(paths):
+    fig, ax = plt.subplots()
+    images = []
+    
+    for path in paths:
+        ax.clear()
+        ax.imshow(path, cmap='Greys', vmin=0, vmax=1)
+        plt.axis('off')
+        plt.title("Rat in the Maze")
+        fig.canvas.draw()
+        plt.pause(0.5)  # Pause for visibility
+        plt.savefig('temp.png')
+        images.append(imageio.imread('temp.png'))
+
+    imageio.mimsave('rat_maze.gif', images, duration=1)
+
+# Define the maze
+maze = [
+    [1, 0, 0, 1],
+    [1, 1, 0, 1],
+    [0, 1, 1, 1],
+    [0, 0, 1, 1]
+]
+
+# Run the maze solver
+outputs = solve_maze(maze)
+print(f"Paths found: {len(outputs)}")

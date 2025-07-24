@@ -1,0 +1,12 @@
+code = """
+def add_two_numbers(a, b):
+    return a + b
+
+# Test cases
+print(add_two_numbers(3, 5))     # Test Case 1: Sum of 3 and 5
+print(add_two_numbers(-1, 10))   # Test Case 2: Sum of -1 and 10
+print(add_two_numbers(0, 0))     # Test Case 3: Sum of 0 and 0
+"""
+
+with open("solutions.py", "w") as f:
+    f.write(code)

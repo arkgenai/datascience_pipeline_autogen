@@ -1,0 +1,10 @@
+import pandas as pd
+
+# Load data from CSV file
+data = pd.read_csv("data.csv")
+
+# Get the number of rows
+number_of_rows = len(data)
+
+# Print the number of rows
+print(f"The number of rows in the dataset is: {number_of_rows}")

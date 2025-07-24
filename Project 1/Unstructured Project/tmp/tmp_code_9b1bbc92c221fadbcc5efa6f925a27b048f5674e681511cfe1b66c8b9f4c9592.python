@@ -1,0 +1,62 @@
+# Install necessary libraries if not present
+!pip install -qqq pillow imageio
+
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
+import imageio
+
+def is_valid_move(grid, row, col, num):
+    # Check if the number is not repeated in the row, column, and 3x3 grid
+    for x in range(3):
+        if grid[row][x] == num or grid[x][col] == num:
+            return False
+    return True
+
+def solve_sudoku(grid):
+    empty = find_empty_location(grid)
+    if not empty:  # If no empty space left, puzzle is solved
+        return True
+    
+    row, col = empty
+    for num in range(1, 4):  # Trying numbers 1 to 3
+        if is_valid_move(grid, row, col, num):
+            grid[row][col] = num  # Place the number
+            if solve_sudoku(grid):  # Recur
+                return True
+            grid[row][col] = 0  # Reset on backtrack
+    return False
+
+def find_empty_location(grid):
+    for i in range(3):
+        for j in range(3):
+            if grid[i][j] == 0:
+                return (i, j)
+    return None
+
+def create_gif(grid, filename):
+    images = []
+    for step in grid:
+        img = Image.new('RGB', (300, 300), color = (255, 255, 255))
+        d = ImageDraw.Draw(img)
+        
+        for i in range(3):
+            for j in range(3):
+                d.text((j * 100 + 40, i * 100 + 30), str(step[i][j]), fill=(0, 0, 0))
+        
+        images.append(img)
+    
+    imageio.mimsave(filename, images, duration=1)
+
+# Sample 3x3 sudoku grid (0 represents empty cells)
+sudoku_grid = [
+    [1, 0, 0],
+    [0, 0, 0],
+    [0, 2, 0]
+]
+
+# Attempt to solve the Sudoku and create a GIF
+if solve_sudoku(sudoku_grid):
+    create_gif(sudoku_grid, 'output.gif')
+    print("Sudoku solved and GIF created.")
+else:
+    print("No solution exists for the Sudoku.")

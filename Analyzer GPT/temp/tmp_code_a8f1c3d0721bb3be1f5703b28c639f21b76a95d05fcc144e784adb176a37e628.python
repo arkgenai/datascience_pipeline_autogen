@@ -1,0 +1,70 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the data
+data = pd.read_csv('data.csv')
+
+# Analyze general information
+general_info = data.describe()
+
+# Check for missing values
+missing_values = data.isnull().sum()
+
+# Correlation analysis
+correlation_matrix = data.corr()
+
+# Setting up a 3x3 plot grid
+fig, axs = plt.subplots(3, 3, figsize=(15, 15))
+fig.suptitle('In-Depth Data Analysis Overview', fontsize=20)
+
+# Plotting
+
+# Plot 1: General statistics
+axs[0, 0].text(0.5, 0.5, str(general_info), fontsize=12, ha='center')
+axs[0, 0].set_title('General Statistics')
+axs[0, 0].axis('off')
+
+# Plot 2: Missing Values
+axs[0, 1].bar(missing_values.index, missing_values.values)
+axs[0, 1].set_title('Missing Values')
+
+# Plot 3: Correlation Matrix
+sns.heatmap(correlation_matrix, ax=axs[0, 2], annot=True, cmap='coolwarm')
+axs[0, 2].set_title('Correlation Matrix')
+
+# Plot 4: Distribution of a key variable (e.g., Age)
+sns.histplot(data['Age'].dropna(), ax=axs[1, 0])
+axs[1, 0].set_title('Age Distribution')
+
+# Plot 5: Unique value counts for a categorical variable (e.g., Embarked)
+sns.countplot(x='Embarked', data=data, ax=axs[1, 1])
+axs[1, 1].set_title('Embarked Category Counts')
+
+# Plot 6: Distribution of Fare
+sns.boxplot(x=data['Fare'], ax=axs[1, 2])
+axs[1, 2].set_title('Fare Distribution')
+
+# Plot 7: Survival Rate by Class
+sns.barplot(x='Pclass', y='Survived', data=data, ax=axs[2, 0])
+axs[2, 0].set_title('Survival Rate by Class')
+
+# Plot 8: Survival Rate by Gender
+sns.barplot(x='Sex', y='Survived', data=data, ax=axs[2, 1])
+axs[2, 1].set_title('Survival Rate by Gender')
+
+# Plot 9: Feature Pairplot (if applicable for extra interesting angles, or other simple plot)
+sns.scatterplot(x='Age', y='Fare', data=data, ax=axs[2, 2])
+axs[2, 2].set_title('Age vs Fare')
+
+# Adjust layout
+plt.tight_layout()
+plt.subplots_adjust(top=0.9)
+
+# Save the image
+plt.savefig('output.png')
+
+# Show the plot for review
+plt.show()
+
+print("Analysis completed and image saved as 'output.png'.")

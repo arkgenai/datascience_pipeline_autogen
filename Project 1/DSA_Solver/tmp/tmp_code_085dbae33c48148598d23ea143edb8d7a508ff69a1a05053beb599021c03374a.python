@@ -1,0 +1,7 @@
+def add_two_numbers(a, b):
+    return a + b
+
+# Test cases
+print(add_two_numbers(3, 5))  # Test case 1: Expected output is 8
+print(add_two_numbers(-1, 4))  # Test case 2: Expected output is 3
+print(add_two_numbers(0, 0))  # Test case 3: Expected output is 0

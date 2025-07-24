@@ -1,0 +1,11 @@
+code = """
+def add_two_numbers(a, b):
+    return a + b
+
+# Test cases
+print(add_two_numbers(3, 7))  # Expected output: 10
+print(add_two_numbers(-1, 8)) # Expected output: 7
+print(add_two_numbers(0, 0))  # Expected output: 0
+"""
+with open("solutions.py", "w") as f:
+    f.write(code)

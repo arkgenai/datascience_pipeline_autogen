@@ -1,0 +1,12 @@
+# Function to add two numbers
+def add_numbers(num1, num2):
+    return num1 + num2
+
+# Test cases
+test_case_1 = add_numbers(5, 3)
+test_case_2 = add_numbers(-10, 15)
+test_case_3 = add_numbers(0, 0)
+
+print("Test case 1: add_numbers(5, 3) =>", test_case_1)
+print("Test case 2: add_numbers(-10, 15) =>", test_case_2)
+print("Test case 3: add_numbers(0, 0) =>", test_case_3)

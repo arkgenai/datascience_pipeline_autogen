@@ -1,0 +1,12 @@
+# Your Python code here
+
+import pandas as pd
+
+# Read the data.csv file
+data = pd.read_csv('data.csv')
+
+# Get the number of rows
+num_rows = data.shape[0]
+
+# Print the number of rows
+print(f"The number of rows in the data.csv file is: {num_rows}")
