@@ -298,3 +298,202 @@ def create_schema():
 
 if __name__ == "__main__":
     create_schema()
+
+
+
+
+
+
+import psycopg
+import sys
+
+# --- Database Connection Configuration ---
+# You will need to replace these with your actual PostgreSQL credentials.
+DB_NAME = "your_db_name"
+DB_USER = "your_user"
+DB_PASSWORD = "your_password"
+DB_HOST = "localhost"
+DB_PORT = 5432
+
+# Define your graph name and labels
+GRAPH_NAME = "my_graph"
+
+# List of 10 vertex labels
+VERTEX_LABELS = [
+    "Person", "Company", "Product", "City", "Country",
+    "Employee", "Customer", "Supplier", "Department", "Project"
+]
+
+# List of 5 edge labels
+EDGE_LABELS = [
+    "WORKS_AT", "LOCATED_IN", "PURCHASED", "MANUFACTURED_BY", "SUPPLIES"
+]
+
+def create_schema():
+    """
+    Connects to the PostgreSQL database and sets up the Apache AGE graph schema.
+    This version applies:
+    - Date partitioning to 'Project' vertex label (using 'created_at' property).
+    - ID partitioning to 'City' vertex label (using 'id' property).
+    - Specific indexing to 'Department' vertex label.
+    - Specific indexing to 'SUPPLIES' edge label.
+    - Standard indexing to other labels.
+    """
+    conn = None
+    try:
+        # Establish a connection to the PostgreSQL database
+        conn = psycopg.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT
+        )
+        conn.autocommit = True
+        cur = conn.cursor()
+
+        # Load the Apache AGE extension for the current session
+        print("Loading AGE extension...")
+        cur.execute("LOAD 'age';")
+        cur.execute(f"SET search_path TO ag_catalog, '$user', public;")
+
+        # Initialize the graph
+        print(f"Initializing graph '{GRAPH_NAME}'...\n")
+        cur.execute(f"SELECT * FROM ag_catalog.create_graph('{GRAPH_NAME}');")
+
+        # --- Partitioning and Indexing for Vertices ---
+        print("\nCreating tables and indexes for all vertex labels...")
+        for label in VERTEX_LABELS:
+            print(f"- Processing vertex label: '{label}'")
+            
+            if label == "Project":
+                print(f"  --> Applying date partitioning for '{label}'")
+                # Create the parent table for partitioning by the 'created_at' property
+                cur.execute(f"""
+                    CREATE TABLE {GRAPH_NAME}."{label}_parent" (
+                        id AGTYPE,
+                        properties AGTYPE
+                    ) PARTITION BY RANGE (agtype_access_operator(VARIADIC ARRAY[properties, '"created_at"'::agtype]));
+                """)
+
+                # Create partitions for specific date ranges (e.g., by year)
+                cur.execute(f"""
+                    CREATE TABLE {GRAPH_NAME}."{label}_2023_data" PARTITION OF {GRAPH_NAME}."{label}_parent"
+                    FOR VALUES FROM ('2023-01-01'::agtype) TO ('2024-01-01'::agtype);
+                """)
+                cur.execute(f"""
+                    CREATE TABLE {GRAPH_NAME}."{label}_2024_data" PARTITION OF {GRAPH_NAME}."{label}_parent"
+                    FOR VALUES FROM ('2024-01-01'::agtype) TO ('2025-01-01'::agtype);
+                """)
+                cur.execute(f"""
+                    CREATE TABLE {GRAPH_NAME}."{label}_2025_data" PARTITION OF {GRAPH_NAME}."{label}_parent"
+                    FOR VALUES FROM ('2025-01-01'::agtype) TO ('2026-01-01'::agtype);
+                """)
+                # Optional: Add a DEFAULT partition for data outside defined ranges
+                # cur.execute(f"CREATE TABLE {GRAPH_NAME}.\"{label}_default_data\" PARTITION OF {GRAPH_NAME}.\"{label}_parent\" DEFAULT;")
+
+                # Indexing for partitioned tables (applied to the parent)
+                print(f"  --> Applying specific indexing for partitioned '{label}'")
+                cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}_parent\" USING BTREE (id);")
+                cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}_parent\" USING BTREE (agtype_access_operator(VARIADIC ARRAY[properties, '\"name\"'::agtype]));")
+                cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}_parent\" USING GIN (properties);")
+            
+            elif label == "City": # Assuming "Located_at" was a typo and meant "City" vertex label
+                print(f"  --> Applying ID partitioning for '{label}'")
+                # Create the parent table for partitioning by the 'id' property
+                cur.execute(f"""
+                    CREATE TABLE {GRAPH_NAME}."{label}_parent" (
+                        id AGTYPE,
+                        properties AGTYPE
+                    ) PARTITION BY RANGE (agtype_access_operator(VARIADIC ARRAY[properties, '"id"'::agtype]));
+                """)
+
+                # Create partitions for specific ID ranges
+                cur.execute(f"""
+                    CREATE TABLE {GRAPH_NAME}."{label}_id_part_1_1000" PARTITION OF {GRAPH_NAME}."{label}_parent"
+                    FOR VALUES FROM ('1'::agtype) TO ('1000'::agtype);
+                """)
+                cur.execute(f"""
+                    CREATE TABLE {GRAPH_NAME}."{label}_id_part_1001_2000" PARTITION OF {GRAPH_NAME}."{label}_parent"
+                    FOR VALUES FROM ('1001'::agtype) TO ('2000'::agtype);
+                """)
+                cur.execute(f"""
+                    CREATE TABLE {GRAPH_NAME}."{label}_id_part_2001_MAX" PARTITION OF {GRAPH_NAME}."{label}_parent"
+                    FOR VALUES FROM ('2001'::agtype) TO (MAXVALUE);
+                """)
+
+                # Indexing for partitioned tables (applied to the parent)
+                print(f"  --> Applying specific indexing for partitioned '{label}'")
+                cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}_parent\" USING BTREE (id);")
+                cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}_parent\" USING BTREE (agtype_access_operator(VARIADIC ARRAY[properties, '\"name\"'::agtype]));")
+                cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}_parent\" USING GIN (properties);")
+
+            else: # For other vertex labels (not partitioned)
+                # Create a non-partitioned table for the vertex label
+                cur.execute(f"""
+                    CREATE TABLE {GRAPH_NAME}."{label}" (
+                        id AGTYPE,
+                        properties AGTYPE
+                    );
+                """)
+                print(f"  --> Created non-partitioned table for '{label}'")
+
+                # Apply indexing based on specific requests or standard practice
+                if label == "Department":
+                    print(f"  --> Applying specific indexing for '{label}'")
+                    cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING BTREE (id);")
+                    cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING BTREE (agtype_access_operator(VARIADIC ARRAY[properties, '\"name\"'::agtype]));")
+                    cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING GIN (properties);")
+                else: # Standard indexing for other non-partitioned vertex labels
+                    print(f"  --> Applying standard indexing for '{label}'")
+                    cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING BTREE (id);")
+                    cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING GIN (properties);")
+
+
+        # --- Indexing for Edges ---
+        print("\nCreating tables and indexes for all edge labels...")
+        for label in EDGE_LABELS:
+            print(f"- Processing edge label: '{label}'")
+            
+            # Create the edge table, including the 'properties' column
+            cur.execute(f"""
+                CREATE TABLE {GRAPH_NAME}."{label}" (
+                    id AGTYPE,
+                    start_id AGTYPE,
+                    end_id AGTYPE,
+                    properties AGTYPE
+                );
+            """)
+            print(f"  --> Created table for edge label '{label}'")
+            
+            # Indexing:
+            cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING BTREE (id);")
+            cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING BTREE (start_id);")
+            cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING BTREE (end_id);")
+            
+            # Apply GIN index on properties specifically for 'SUPPLIES' or other general cases
+            if label == "SUPPLIES":
+                print(f"  --> Applying specific GIN indexing for '{label}' properties.")
+                cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING GIN (properties);")
+            else:
+                print(f"  --> Applying standard GIN indexing for '{label}' properties.")
+                cur.execute(f"CREATE INDEX ON {GRAPH_NAME}.\"{label}\" USING GIN (properties);")
+
+
+        print("\nSchema creation complete!")
+        print(f"- Graph '{GRAPH_NAME}' created.")
+        print(f"- Tables and indexes for {len(VERTEX_LABELS)} vertex labels and {len(EDGE_LABELS)} edge labels created.")
+        print("- Vertex table 'Project' is partitioned by 'created_at' date property.")
+        print("- Vertex table 'City' is partitioned by 'id' property.")
+        print("- Vertex table 'Department' has specific indexing (id, name, properties GIN).")
+        print("- Edge table 'SUPPLIES' has specific GIN indexing on properties.")
+
+    except (Exception, psycopg.DatabaseError) as error:
+        print(f"Error: {error}")
+        sys.exit(1)
+    finally:
+        if conn is not None:
+            conn.close()
+
+if __name__ == "__main__":
+    create_schema()
