@@ -497,3 +497,273 @@ def create_schema():
 
 if __name__ == "__main__":
     create_schema()
+
+
+
+
+
+import psycopg
+import json
+import datetime
+import random
+from typing import Dict, List, Any
+
+# --- Database Connection Configuration ---
+# Update these with your actual PostgreSQL credentials.
+DB_NAME = "your_db_name"
+DB_USER = "your_user"
+DB_PASSWORD = "your_password"
+DB_HOST = "localhost"
+DB_PORT = 5432
+
+# The name of the graph created in schema.py
+GRAPH_NAME = "my_graph"
+
+# --- Helper Function for Property Conversion ---
+def _convert_properties_to_agtype(properties: Dict[str, Any]) -> str:
+    """Convert Python dict to AGE AGTYPE format for Cypher."""
+    # Ensure properties that are partitioning keys are handled correctly as strings
+    # For dates, format as 'YYYY-MM-DD' string for ::agtype casting in SQL
+    converted = {}
+    for key, value in properties.items():
+        if isinstance(value, datetime.date):
+            converted[key] = value.isoformat() # Convert date object to 'YYYY-MM-DD' string
+        elif isinstance(value, datetime.datetime):
+            converted[key] = value.isoformat() # Convert datetime object to string
+        elif isinstance(value, (int, float, bool)):
+            converted[key] = value # Keep numbers and booleans as is
+        else:
+            converted[key] = str(value) # Ensure IDs are strings as expected by agtype_access_operator with ::agtype
+    return json.dumps(converted)
+
+
+# --- Sample Data Generation ---
+def create_sample_data() -> List[tuple]:
+    """
+    Generates sample triplet data (source, relationship, target)
+    including properties for vertices and edges, aligning with schema partitions.
+    """
+    sample_data = []
+
+    # Vertex IDs for City for ID-based partitioning
+    city_ids = [50, 1500, 2500, 3500] # Examples hitting different partitions, or MAXVALUE
+
+    # Project creation dates for Date-based partitioning
+    project_dates = [
+        datetime.date(2023, 11, 15), # Falls into 2023 partition
+        datetime.date(2024, 6, 20),  # Falls into 2024 partition
+        datetime.date(2025, 1, 10),  # Falls into 2025 partition
+    ]
+
+    # Sample Vertices
+    # Person (non-partitioned, standard indexing)
+    sample_data.append(("Person", {"id": str(uuid.uuid4()), "name": "Alice Smith", "age": 30}, None, None, None, None))
+    sample_data.append(("Person", {"id": str(uuid.uuid4()), "name": "Bob Johnson", "age": 45}, None, None, None, None))
+
+    # Company (non-partitioned, standard indexing)
+    sample_data.append(("Company", {"id": str(uuid.uuid4()), "name": "InnovateX Corp", "industry": "Tech"}, None, None, None, None))
+    sample_data.append(("Company", {"id": str(uuid.uuid4()), "name": "Global Solutions Ltd", "industry": "Consulting"}, None, None, None, None))
+
+    # Product (non-partitioned, standard indexing)
+    sample_data.append(("Product", {"id": str(uuid.uuid4()), "name": "Quantum Processor", "version": "1.0"}, None, None, None, None))
+
+    # City (ID-partitioned)
+    sample_data.append(("City", {"id": str(city_ids[0]), "name": "New York", "population": 8000000}, None, None, None, None))
+    sample_data.append(("City", {"id": str(city_ids[1]), "name": "Los Angeles", "population": 4000000}, None, None, None, None))
+    sample_data.append(("City", {"id": str(city_ids[2]), "name": "Chicago", "population": 2700000}, None, None, None, None))
+
+    # Country (non-partitioned, standard indexing)
+    sample_data.append(("Country", {"id": str(uuid.uuid4()), "name": "USA", "continent": "North America"}, None, None, None, None))
+
+    # Employee (non-partitioned, standard indexing)
+    sample_data.append(("Employee", {"id": str(uuid.uuid4()), "employee_id": "E1001", "name": "David Lee"}, None, None, None, None))
+
+    # Customer (non-partitioned, standard indexing)
+    sample_data.append(("Customer", {"id": str(uuid.uuid4()), "customer_id": "C2001", "name": "Emily White"}, None, None, None, None))
+
+    # Supplier (non-partitioned, standard indexing)
+    sample_data.append(("Supplier", {"id": str(uuid.uuid4()), "supplier_id": "S3001", "name": "Raw Materials Inc."}, None, None, None, None))
+
+    # Department (non-partitioned, specific indexing)
+    sample_data.append(("Department", {"id": str(uuid.uuid4()), "name": "Engineering", "budget": 1000000}, None, None, None, None))
+    sample_data.append(("Department", {"id": str(uuid.uuid4()), "name": "Marketing", "budget": 500000}, None, None, None, None))
+
+    # Project (Date-partitioned)
+    sample_data.append(("Project", {"id": str(uuid.uuid4()), "name": "Project Alpha", "status": "Active", "created_at": project_dates[0]}, None, None, None, None))
+    sample_data.append(("Project", {"id": str(uuid.uuid4()), "name": "Project Beta", "status": "Completed", "created_at": project_dates[1]}, None, None, None, None))
+    sample_data.append(("Project", {"id": str(uuid.uuid4()), "name": "Project Gamma", "status": "Planning", "created_at": project_dates[2]}, None, None, None, None))
+
+
+    # Sample Edges (Relationships)
+    # Triplet format: (source_label, source_props, edge_label, edge_props, target_label, target_props)
+    
+    # WORKS_AT edge (standard indexing)
+    sample_data.append(
+        ("Person", {"id": "Alice Smith"}, "WORKS_AT", {"since": "2020-01-15", "role": "Software Engineer"},
+         "Company", {"name": "InnovateX Corp"})
+    )
+    sample_data.append(
+        ("Employee", {"employee_id": "E1001"}, "WORKS_AT", {"start_date": "2023-01-01", "department": "Engineering"},
+         "Company", {"name": "InnovateX Corp"})
+    )
+
+    # LOCATED_IN edge (standard indexing)
+    sample_data.append(
+        ("Company", {"name": "InnovateX Corp"}, "LOCATED_IN", {"main_office": True},
+         "City", {"id": str(city_ids[0])}) # Link to New York City
+    )
+    sample_data.append(
+        ("Person", {"name": "Bob Johnson"}, "LOCATED_IN", {"current": True},
+         "City", {"id": str(city_ids[1])}) # Link to Los Angeles
+    )
+
+    # PURCHASED edge (standard indexing)
+    sample_data.append(
+        ("Customer", {"customer_id": "C2001"}, "PURCHASED", {"order_date": "2024-05-10", "quantity": 1},
+         "Product", {"name": "Quantum Processor"})
+    )
+
+    # MANUFACTURED_BY edge (standard indexing)
+    sample_data.append(
+        ("Product", {"name": "Quantum Processor"}, "MANUFACTURED_BY", {"production_line": "A", "batch_no": "XYZ789"},
+         "Company", {"name": "InnovateX Corp"})
+    )
+
+    # SUPPLIES edge (specific indexing)
+    sample_data.append(
+        ("Supplier", {"supplier_id": "S3001"}, "SUPPLIES", {"contract_duration_months": 24, "material_type": "Semiconductors"},
+         "Company", {"name": "InnovateX Corp"})
+    )
+    sample_data.append(
+        ("Company", {"name": "InnovateX Corp"}, "SUPPLIES", {"contract_id": "INV-DELL-001"},
+         "Company", {"name": "Global Solutions Ltd"})
+    )
+
+    # Link a Department to a Project
+    sample_data.append(
+        ("Department", {"name": "Engineering"}, "WORKS_ON", {"allocation_pct": 75},
+         "Project", {"name": "Project Alpha"})
+    )
+
+    return sample_data
+
+
+# --- Graph Ingestion Class ---
+class AGEGraphIngestion:
+    def __init__(self, db_config: Dict[str, str], graph_name: str):
+        self.db_config = db_config
+        self.graph_name = graph_name
+        self.conn = None
+        self.cur = None
+        # This mapping will store AGE internal IDs for easier edge creation
+        self.vertex_internal_id_mapping = {}
+
+    def connect(self):
+        try:
+            self.conn = psycopg.connect(**self.db_config)
+            self.conn.autocommit = True
+            self.cur = self.conn.cursor()
+            self.cur.execute("LOAD 'age';")
+            self.cur.execute("SET search_path TO ag_catalog, '$user', public;")
+            print("Connected to database and loaded AGE extension.")
+        except Exception as e:
+            print(f"Failed to connect to database: {e}")
+            raise
+
+    def disconnect(self(self):
+        if self.conn:
+            self.conn.close()
+            print("Database connection closed.")
+
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.disconnect()
+
+    def ingest_triplet(self,
+                        source_label: str, source_props: Dict[str, Any],
+                        edge_label: str, edge_props: Dict[str, Any],
+                        target_label: str, target_props: Dict[str, Any]):
+        try:
+            # Convert properties to AGE AGTYPE format strings
+            source_props_str = _convert_properties_to_agtype(source_props)
+            target_props_str = _convert_properties_to_agtype(target_props)
+            edge_props_str = _convert_properties_to_agtype(edge_props)
+
+            # Use MERGE for vertices to prevent duplicates if running multiple times
+            # Use CREATE for edges to allow multiple edges between same vertices
+            cypher_query = f"""
+                MERGE (a:{source_label} {source_props_str})
+                MERGE (b:{target_label} {target_props_str})
+                CREATE (a)-[r:{edge_label} {edge_props_str}]->(b)
+                RETURN a, b, r
+            """
+            
+            self.cur.execute(f"SELECT * FROM cypher('{self.graph_name}', $$ {cypher_query} $$) AS (s agtype, t agtype, r agtype);")
+            
+            # Optionally fetch results if you want to see the AGE IDs created
+            # result = self.cur.fetchone()
+            # print(f"Ingested: {result}")
+            print(f"Ingested: ({source_label} {source_props.get('name', '') or source_props.get('id', '')})-[{edge_label} {edge_props.get('role', '') or edge_props.get('contract_id', '')}]->({target_label} {target_props.get('name', '') or target_props.get('id', '')})")
+
+        except Exception as e:
+            print(f"Error ingesting triplet: {e}")
+            raise # Re-raise to see full traceback
+
+
+# --- Main execution example ---
+if __name__ == "__main__":
+    # Database configuration (ensure this matches your PostgreSQL setup)
+    DB_CONFIG = {
+        "dbname": "your_db_name",
+        "user": "your_user",
+        "password": "your_password",
+        "host": "localhost",
+        "port": "5432"
+    }
+    
+    # Graph name (ensure this matches the GRAPH_NAME in your schema.py)
+    GRAPH_NAME = "my_graph" 
+    
+    with AGEGraphIngestion(DB_CONFIG, GRAPH_NAME) as ingestion:
+        sample_data = create_sample_data()
+        print(f"\n--- Starting ingestion of {len(sample_data)} graph elements ---")
+        
+        # Ingest vertices first, then edges (to ensure vertices exist)
+        # Separate vertices and edges from the sample data
+        vertices_to_ingest = []
+        edges_to_ingest = []
+
+        for item in sample_data:
+            # Check if it's a vertex (no edge_label) or an edge (has edge_label)
+            if item[2] is None: # Format: (label, props, None, None, None, None) for vertices
+                vertices_to_ingest.append(item)
+            else: # Format: (source_label, source_props, edge_label, edge_props, target_label, target_props) for edges
+                edges_to_ingest.append(item)
+
+        print("\nIngesting Vertices:")
+        # Ingest vertices first to ensure they exist for edges
+        for item in vertices_to_ingest:
+            label, props, _, _, _, _ = item
+            try:
+                # Use a MERGE query to create vertex if it doesn't exist
+                props_str = _convert_properties_to_agtype(props)
+                cypher_query = f"MERGE (v:{label} {props_str}) RETURN id(v)"
+                ingestion.cur.execute(f"SELECT * FROM cypher('{ingestion.graph_name}', $$ {cypher_query} $$) AS (id agtype);")
+                ingestion.cur.fetchone() # Fetch to clear result
+                print(f"  ✓ Created/Merged Vertex: {label} with props {props}")
+                # Store a mapping for simpler edge creation later if needed
+                # For this script, we're relying on MERGE by properties for edge linking
+            except Exception as e:
+                print(f"  ✗ Failed to create/merge vertex {label} with props {props}: {e}")
+
+        print("\nIngesting Edges:")
+        # Now ingest edges
+        for item in edges_to_ingest:
+            source_label, source_props, edge_label, edge_props, target_label, target_props = item
+            ingestion.ingest_triplet(source_label, source_props, edge_label, edge_props, target_label, target_props)
+
+        print("\n--- Ingestion completed! ---")
+
