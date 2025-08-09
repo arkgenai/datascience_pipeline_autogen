@@ -767,3 +767,29 @@ if __name__ == "__main__":
 
         print("\n--- Ingestion completed! ---")
 
+
+# --- Helper Function for Property Conversion ---
+def _format_props_for_cypher_map(properties: Dict[str, Any]) -> str:
+    """
+    Converts a Python dictionary of properties into a string
+    suitable for direct embedding into a Cypher property map.
+    Example output: 'key1: "value1", key2: 123, date_key: "YYYY-MM-DD"'
+    String values are single-quoted, numbers/booleans are unquoted.
+    """
+    parts = []
+    for key, value in properties.items():
+        if isinstance(value, str):
+            # Escape any single quotes within the string itself for Cypher literal
+            escaped_value = value.replace("'", "\\'")
+            parts.append(f"{key}: '{escaped_value}'")
+        elif isinstance(value, (int, float, bool)):
+            parts.append(f"{key}: {value}") # Numbers and booleans do not need quotes in Cypher
+        elif isinstance(value, datetime.date):
+            parts.append(f"{key}: '{value.isoformat()}'") # Dates as quoted ISO strings
+        elif isinstance(value, datetime.datetime):
+            parts.append(f"{key}: '{value.isoformat()}'") # Datetimes as quoted ISO strings
+        else:
+            # Fallback for other types like UUID objects, convert to string and quote
+            escaped_value = str(value).replace("'", "\\'")
+            parts.append(f"{key}: '{escaped_value}'")
+    return ", ".join(parts)
