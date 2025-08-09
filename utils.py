@@ -148,3 +148,129 @@ table_stats = cur.fetchall()
 print(f"Table statistics for graph '{GRAPH_NAME}':")
 for stat in table_stats:
     print(f"  - {stat[1]}: {stat[2]} ({stat[3] or 0} rows)")
+
+
+
+
+
+
+
+def _execute_query(query: str, db_config: Dict[str, Any], graph_name: str) -> Optional[List[Dict[str, Any]]]:
+    """Helper function to execute a SQL query and return results."""
+    conn = None
+    try:
+        conn = psycopg.connect(**db_config)
+        conn.autocommit = True
+        cur = conn.cursor()
+
+        cur.execute("LOAD 'age';")
+        # Set search path to ensure schema and functions are found
+        cur.execute(f"SET search_path TO ag_catalog, '{graph_name}', '$user', public;")
+
+        cur.execute(query)
+        columns = [desc[0] for desc in cur.description]
+        results = [dict(zip(columns, row)) for row in cur.fetchall()]
+        return results
+    except Exception as e:
+        print(f"Error executing query: {query}\nError details: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+
+def view_non_partitioned_vertex_data(label: str, limit: int = 10) -> Optional[List[Dict[str, Any]]]:
+    """
+    Views data from a non-partitioned vertex table.
+    e.g., "Person", "Company", "Department"
+    """
+    print(f"\n--- Viewing data for non-partitioned vertex '{label}' ---")
+    table_name = f'"{GRAPH_NAME}"."{label}"'
+    query = f"""
+        SELECT
+            id AS age_internal_id,
+            properties AS vertex_properties
+        FROM {table_name}
+        LIMIT {limit};
+    """
+    return _execute_query(query, DB_CONFIG, GRAPH_NAME)
+
+def view_partitioned_vertex_parent_data(label: str, start_date: str, end_date: str, limit: int = 10) -> Optional[List[Dict[str, Any]]]:
+    """
+    Views data from a partitioned vertex parent table, leveraging partition pruning.
+    This works for labels like "Project" (partitioned by 'created_at') or "City" (partitioned by 'id').
+    Provide 'start_date' and 'end_date' as 'YYYY-MM-DD' strings for date-partitioned tables.
+    For ID-partitioned tables like "City", replace start_date/end_date with appropriate ID strings.
+    """
+    print(f"\n--- Viewing data for partitioned vertex parent '{label}' (filtered by date) ---")
+    table_name = f'"{GRAPH_NAME}"."{label}_parent"'
+    
+    # This query assumes 'created_at' for date partitioning, adjust if 'id' or other key
+    # For City (ID partitioned), you'd pass string IDs like '100' and '500' for start_date/end_date
+    # And change agtype_access_operator to '"id"' instead of '"created_at"'
+    query = f"""
+        SELECT
+            id AS age_internal_id,
+            properties AS vertex_properties
+        FROM {table_name}
+        WHERE agtype_access_operator(properties, '"created_at"'::agtype) >= '{start_date}'::agtype
+        AND agtype_access_operator(properties, '"created_at"'::agtype) < '{end_date}'::agtype
+        LIMIT {limit};
+    """
+    print(f"Executing query with filter: created_at from {start_date} to {end_date}")
+    return _execute_query(query, DB_CONFIG, GRAPH_NAME)
+
+def view_specific_child_partition_data(label: str, partition_suffix: str, limit: int = 10) -> Optional[List[Dict[str, Any]]]:
+    """
+    Views data from a specific child partition table.
+    e.g., "Project_2024_data" or "City_id_part_1_1000"
+    """
+    print(f"\n--- Viewing data for specific child partition '{label}_{partition_suffix}' ---")
+    table_name = f'"{GRAPH_NAME}"."{label}_{partition_suffix}"'
+    query = f"""
+        SELECT
+            id AS age_internal_id,
+            properties AS vertex_properties
+        FROM {table_name}
+        LIMIT {limit};
+    """
+    return _execute_query(query, DB_CONFIG, GRAPH_NAME)
+
+
+if __name__ == "__main__":
+    # --- Example Usage ---
+
+    # 1. View data from a Non-Partitioned Vertex Table (e.g., "Person" or "Department")
+    person_data = view_non_partitioned_vertex_data("Person", limit=5)
+    if person_data:
+        for row in person_data:
+            print(f"  {row}")
+
+    department_data = view_non_partitioned_vertex_data("Department", limit=3)
+    if department_data:
+        for row in department_data:
+            print(f"  {row}")
+
+    # 2. View data from a Partitioned Vertex Parent Table (e.g., "Project" by date)
+    # This will use partition pruning if the date range matches an existing partition
+    project_2024_data = view_partitioned_vertex_parent_data("Project", "2024-01-01", "2025-01-01", limit=5)
+    if project_2024_data:
+        for row in project_2024_data:
+            print(f"  {row}")
+
+    # Example for an ID-partitioned table ("City") - adjust function call accordingly
+    # You would need a separate function or modify view_partitioned_vertex_parent_data
+    # to accept ID ranges instead of date strings for the WHERE clause.
+    # For now, illustrating how you'd conceptualize it:
+    # city_id_data = view_partitioned_vertex_parent_data("City", "1", "1000", limit=5) # This would require function mod.
+
+    # 3. View data from a Specific Child Partition (e.g., "Project_2024_data")
+    specific_project_part_data = view_specific_child_partition_data("Project", "2024_data", limit=5)
+    if specific_project_part_data:
+        for row in specific_project_part_data:
+            print(f"  {row}")
+
+    # Example for a City child partition
+    specific_city_part_data = view_specific_child_partition_data("City", "id_part_1_1000", limit=5)
+    if specific_city_part_data:
+        for row in specific_city_part_data:
+            print(f"  {row}")
