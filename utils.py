@@ -274,3 +274,16 @@ if __name__ == "__main__":
     if specific_city_part_data:
         for row in specific_city_part_data:
             print(f"  {row}")
+
+
+SELECT tablename
+FROM pg_tables
+WHERE schemaname = (
+    SELECT nspname
+    FROM pg_namespace
+    WHERE oid = (
+        SELECT namespace
+        FROM ag_catalog.ag_graph
+        WHERE name = 'cia'
+    )
+);
