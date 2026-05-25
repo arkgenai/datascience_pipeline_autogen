@@ -1,0 +1,55 @@
+Write a complete Python script using python-pptx that generates a downloadable .pptx file called "[YOUR_FILENAME].pptx" with the following AESTHETIC rules. Do not invent content — use "[YOUR_TOPIC]" as placeholder text everywhere.
+
+SLIDE DIMENSIONS: 10 x 5.625 inches (16:9).
+
+BACKGROUND: All slides use solid fill hex #060A12 (near-black navy). No gradients.
+
+TITLE SLIDE:
+- Main title: font Calibri, size 46pt, bold, color #FFFFFF, left-aligned at x=0.5, y=1.0
+- Subtitle line: font Calibri, size 18pt, color #A78BFA (violet-light), left-aligned at x=0.5, y=2.1
+- Horizontal rule: thin rectangle shape, height 0.04in, width 9.0in, fill #7C3AED, at y=2.8
+- Three metric cards at y=3.3: each is a rounded rectangle (width 2.8in, height 0.95in), fill #2D1B69, border color #A78BFA border width 1pt. Inside each: small label text 9pt color #A78BFA, large value text 22pt bold color #FFFFFF
+- Bottom caption: 8pt, color #64748B, right-aligned
+
+CONTENT SLIDE LAYOUT (for all other slides):
+- Top bar: solid rectangle full width, height 0.6in, fill #0D1321
+- Teal accent stripe below top bar: height 0.06in, fill #06B6D4
+- Slide number badge: rounded rect width 1.3in height 0.35in fill #0C3A42, border #22D3EE 1pt, text 8pt bold color #22D3EE, at x=0.3, y=0.1
+- Title text inside top bar: 14pt bold white, at x=1.7, y=0.1
+- Subtitle text: 9pt color #94A3B8, at x=1.7, y=0.38
+
+FIELD PILLS (domain tags):
+- Rounded rectangles height 0.2in, fill = accent color, no border
+- Text inside: 8pt bold, same accent color darkened
+- Place in a horizontal row starting at x=1.7, y=0.6, spacing 0.08in between
+
+SCORE BADGES (3 per slide, left side):
+- Each: rounded rect 1.52in x 0.7in, fill = semantic bg color, border = semantic color 1.2pt
+- Label: 7pt bold, centered, semantic color
+- Value: 21pt bold, centered, semantic color
+- Positions: x=0.28 for first, x=1.98 for second, x=3.68 for third. y=0.88
+
+INSIGHT BANNER (full width):
+- Rounded rect from x=0.28 to x=9.72, y=1.7, height 0.73in, fill = accent bg, border = accent color 1pt
+- Emoji icon + "SOURCE INSIGHT" label: 8pt bold accent color at x=0.42, y=1.76
+- Body text: 8.5pt color #F1F5F9, line spacing 1.2, at x=0.42, y=1.95
+
+LEFT COLUMN CARDS (two stacked):
+- Problem card: rounded rect x=0.28, y=2.53, w=4.58in, h=1.18in, fill #111827, border #1E2D45 0.5pt
+- Approach card: rounded rect x=0.28, y=3.79, w=4.58in, h=1.68in, same style
+- Section label inside each: small rounded rect with colored border, 7.5pt bold colored text, centered
+
+RIGHT COLUMN CARDS (two stacked):
+- Claims card: x=5.14, y=2.53, w=4.58in, h=1.65in, same card style
+- Differentiation card: x=5.14, y=4.26, w=4.58in, h=1.21in, fill #0A0F1A, border = accent color 1pt
+
+BULLET TEXT inside cards: 8.5pt, color #F1F5F9, line spacing 1.28, left margin 4pt
+
+SUMMARY SLIDE:
+- Title: 28pt bold white
+- Table rows alternating fill #111827 and #141C2E
+- Score cells: small rounded rects with colored fill and bold colored number inside
+- Footer: 7.5pt color #64748B
+
+FONT RULE: Use Calibri for all headings. Use Calibri for body text. No other fonts.
+COLOR ACCENT SYSTEM: Define 3 accent colors as Python variables at top of script so they are easy to swap: ACCENT_PRIMARY, ACCENT_BG, ACCENT_LIGHT.
