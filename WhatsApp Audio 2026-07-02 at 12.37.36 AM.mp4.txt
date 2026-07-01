@@ -1,0 +1,1475 @@
+match with the cust id is it no obligor id and customer id are two different uh okay so obligor
+
+id is basically the legal entity or the business that is associated with the corresponding card
+
+exactly yeah okay so and what would be the exact user identifier that maps to that specific legal
+
+entity is there any mapping that is there or how does that because I don't see a cust ID there
+
+or is it something like a cust XRFID that we should use or
+
+how do we link the tables actually so we have two tables that were
+
+informed to us which is basically the customer 360
+
+360, no, 360, customer demographics.
+
+Demographic and commercial.
+
+Customer commercial.
+
+Is there a way you can show us any simulation or something?
+
+See, those two tables are not for linking.
+
+They are for two different use cases.
+
+Oh.
+
+I mean, you will not find any cross-reference or cross-validations you can do between both of them. One is for commercial demographic information.
+
+One is for consumer demographic information.
+
+If you want to pull consumer demographics, you use consumer table.
+
+If you want the commercial demographics, use the commercial table.
+
+If you want to ask for this given account number, who is the obligor,
+
+then you go to the commercial table and get the obligor identifier for that particular account.
+
+But if you say for this particular account number, what are the other card products or non-card products associated with this person?
+
+Then you go to the consumer table and fetch the data.
+
+Which is why you would find me and Rohit asking a lot of questions on what your use case is.
+
+To be able to better advise which table helps serve you better, we need to understand more on what your use case is.
+
+So, okay.
+
+Yeah, Rajesh, please go ahead.
+
+So, Rajan, if you want to get this payment-related uh details like which tables we can use c360 doesn't
+
+store payment information we only store demographics no in if you want to i mean like
+
+have informations about this payment failures so which tables we should able to refer it
+
+when you say payment failures, can you explain more?
+
+Like if the customer is trying
+
+to pay the payment, like credit card bills.
+
+Okay.
+
+So if it get
+
+failed.
+
+So if let's say you are trying to pay
+
+a credit card, okay, now
+
+and failed, you won't understand
+
+who is this person.
+
+Yeah.
+
+What are the other card products associated with this person?
+
+Yes.
+
+Then you go to the consumer demographics table.
+
+Okay.
+
+Okay.
+
+Or if you say, hey, this seems like an open card.
+
+What is the business for it?
+
+What is a business identifier?
+
+Who is the obligor for it?
+
+Who is the counterparty for it?
+
+What is a legal construct of this particular business?
+
+All of that information you will get from the commercial table.
+
+Okay.
+
+So depending on whether you are talking about individual cards or open cards and corporate cards,
+
+and what information you are trying to source
+
+what table you have to use differs okay so one question uh so now if we are to link customer to
+
+customer okay so okay let me let me take the example of what raj said right i think that is
+
+the point where we are trying to start and we would like to understand what
+
+tables to be used.
+
+So now, for example, I am the person who has two cards.
+
+One is my personal MX card and the other one is the corporate card.
+
+Now if I have a corporate card, my assumption is we will have an obligor ID also associated
+
+to it. Is my assumption is we will have an obligor ID also associated to it.
+
+Okay.
+
+Is my assumption right?
+
+Yeah.
+
+Yeah.
+
+So now, if I am to search for a, if I am with respect to the identification that we are trying to do as a POC.
+
+Okay. identification that we're trying to do as a poc okay if i am to identify myself right in the system
+
+now i need to fetch the details of both
+
+okay including the entity which my corporate card is linked to etc okay right so now uh i'm just
+
+trying to ask what are the tables that are related to this just trying to ask what are the tables related to this? Yeah.
+
+The tables, what are the tables that I should be connecting
+
+or what are the tables from which I should be using the data
+
+to gather this information?
+
+You mean the obligate information?
+
+Obligate plus the consumer.
+
+Yeah, then both the tables.
+
+You will get the obligure information from the commercial table and you will get the consumer
+
+information from the consumer demographics table.
+
+Okay, so basically commercial demographics and consumer demographics are the tables that
+
+we should be looking at.
+
+Yes.
+
+Okay, so will they have a common link between them? If I say I find a customer ID in consumer table,
+
+will I be able to find that consumer ID in the commercial table also?
+
+No, right?
+
+That's what you're saying.
+
+They're mutually unrelated or unintersected tables.
+
+To a large extent, yes.
+
+Like, for example, see, you will still be able to consider an open account
+
+or a corporate account, right?
+
+You will still be able to an open account or a corporate account right you will
+
+still be able to inquire commercial table with this information and you will still be able to
+
+inquire the consumer table with the account number as key okay you inquire from the consumer you will
+
+get hey um what is the first name
+
+last name, DOB, gov doc ID, everything of this corporate card.
+
+Okay.
+
+Okay.
+
+From the commercial table, you will get what is the business name,
+
+what is the legal business name, what is the business ID,
+
+what is the obligor ID for this,
+
+what are the other relationships with the obligor,
+
+the counterparty ID, all of that information you will get
+
+from the commercial table.
+
+Oh, okay.
+
+So is it safe to say that we might have this account number to be a common thing between the booth?
+
+Depending on, if you're talking about like BCA client ID or some information,
+
+you won't find that on the consumer table.
+
+Only for certain portfolios right you will be able to
+
+find them common oh okay like like open cards right you'll find them common between both the tables
+
+because open credit cards have both aspects of the business and the individual demographics
+
+aspects of the business and the individual demographics. Oh, okay. So we will find records in both the tables then?
+
+Yeah.
+
+Okay.
+
+Arjun, if you want to connect this risk patterns to this knowledge graph like which tables we need to consider
+
+that would be the CFR ODR tables we don't have anything to do with that okay
+
+so I mean like at a customers 360 I mean we have entire things in this demographic table.
+
+Customer 360 is mostly demographics, income, occupation, information like that.
+
+Risk patterns would be with the CFR, ODL team.
+
+So Rajesh then I think for the POC on identity resolution I think we will have to look at the commercial demographics and consumer demographics table.
+
+Yeah.
+
+So Rama just can you check with them like I mean how to, I mean whatever, what we have
+
+extracted is in the right way or not.
+
+Yeah.
+
+So, Arjun and Rohit, we actually had extracted some details on the E2 table.
+
+Okay. extracted some details on the e2 table okay so let me quickly share my screen
+
+so
+
+yeah so just wanted to understand we still see keys like this auth officer to national ID
+
+is this how the key looks like even needed
+
+this doesn't look this is a NAT ID right
+
+a NAT ID yeah that's an auth officer to NAT ID auth officer a NAT ID, right? A NAT ID, yeah. Auth officer to NAT ID.
+
+Auth officer to NAT ID.
+
+This looks more encrypted information.
+
+Okay.
+
+This is commercial table, right?
+
+This is from commercial table, I think, yes.
+
+Yeah.
+
+Do you have anything from the consumer?
+
+Whichever you call.
+
+Consumer table, I don't think we... Let's take a look at the name data if you have anything.
+
+We have this business something. Business address decrypted.
+
+Yeah, that seems that looks a little bit decrypted data itself.
+
+Yeah, that seems that looks a little bit decrypted data itself.
+
+Okay.
+
+That is the deep?
+
+Yeah, decryption is working as expected. Just check that if there is any IIQ associated with that NAT ID
+
+and if you have access to it.
+
+Because you're saying this is E2 data,
+
+it's really hard to say which market you pulled it from
+
+and all of that, right?
+
+And I don't even know if you have the NAT ID type
+
+documented here, right?
+
+You just have the NAT ID, right?
+
+With this, I'm not able to say
+
+if it's a decrypted value or not.
+
+Get the NAT ID type also in your query.
+
+That will tell you whether it is an SSN,
+
+whether it is a passport or something,
+
+and that will add more context
+
+to verify if this is present.
+
+If not, I would recommend you get access
+
+to the respective Lumi IAQ
+
+associated with GovDoc ID,
+
+and that should help you validate.
+
+If you do not have that access,
+
+then yeah, decrypted value also will not will also
+
+come up as encrypted itself right so okay yeah that's what was it what was it no sorry i missed
+
+that word uh what you're saying nat id type okay nat id type yeah that's an additional column. It'll be right next to the table itself.
+
+Okay.
+
+@idtype, I don't know if it is there in this.
+
+I mean, we tried to do that.
+
+@idtype says...
+
+Yeah, it looks like you do not have access, right?
+
+That's why you're getting it so check get
+
+the access is associated with this one okay once one uh simple query so today i was trying to
+
+actually check for our service id if we have access so if you can see this
+
+This was for auth officer 5 NAT ID column.
+
+Okay.
+
+The actual encrypted value looked like this.
+
+After decryption, it looked like this.
+
+So does this mean, I don't know.
+
+Just want to check it.
+
+Yeah, then it seems more legit that, you know,
+
+whatever value you have in the table is more or less like that.
+
+Try to get me a couple of samples.
+
+I'll cross-validate it from my end as well and confirm back to you.
+
+Okay, sure.
+
+We'll send a cross in that group, yeah.
+
+Yeah, no problem.
+
+So that's the reason that we are asking for some data records from you
+
+so that we can be able to compare and see what we are doing is right or wrong. I understand.
+
+Yeah.
+
+We are missing something.
+
+And another one more thing, Aljun, like as you told that the risk-related things, it's
+
+for CFR team.
+
+Is there any connections of the link established between the CFR and Customer 360?
+
+Very busy.
+
+As usual. 360? Very busy. As you, Shabal.
+
+CFR and customer ID.
+
+It will be based on the key parameters like account number.
+
+They take a lot of data from us, like our demographics,
+
+the account info, and customer identifier,
+
+which are all key and critical attributes.
+
+Okay.
+
+So they'll serve as a common reference points between both the tables.
+
+So the common keys could be the CM11, CM13, CM15
+
+or other numbers?
+
+Yeah.
+
+Okay.
+
+So all the audience levels, basically.
+
+The audience levels could be the actual joining
+
+keys, right?
+
+Yeah.
+
+Okay.
+
+And one more question, Rajesh and I had this doubt, right?
+
+The some, okay, let me put the query like this. in consumer consumer demographics and commercial demographics
+
+for a specific user or a specific
+
+legal entity will we be having
+
+only one entry or
+
+per card product will be having one entry
+
+per card product
+
+you will have one entry
+
+per card product
+
+there is
+
+another table which will give you
+
+customer level demographics but that will not have
+
+product information that will tell you who is the customer what is the best identified information
+
+of that customer it won't give you product references if you want product references what
+
+two tables you have is the best okay what is that consumer uh which has the details of only the consumer
+
+um it's called the customer customer entity table okay customer 360 entity demographics
+
+entity demographics okay but i don't know at this point if it's okay
+
+any value because it will not have any 37 numbers or any account numbers or anything.
+
+Okay. Okay. Okay. So but this has the unique custody that is used in the consumer table.
+
+Yeah. Okay. So, so just one query. If so the Okay, okay, you're seeing one entry per product, right?
+
+Okay.
+
+So there could be same customer ID, multiple products linked to the same obligor ID as
+
+well.
+
+That scenario is also possible.
+
+Yes.
+
+Yeah.
+
+Multiple companies can have the same obligor, right?
+
+So.
+
+Okay.
+
+Okay.
+
+Okay.
+
+So. Guys, I'm late for another call
+
+by 5 minutes I'll be happy to
+
+support with more questions but can we
+
+meet later in time and Rohit
+
+is in
+
+India so if we can have this connects a little
+
+early in the morning it'll be much better
+
+oh ok so maybe that Rohit was also
+
+in the US
+
+I don't one last question.
+
+No worries, no worries.
+
+Yeah, I think most of your questions Arjun can handle
+
+if there is any need on the data.
+
+Like, my team looks into the matching aspect of Individual 360.
+
+So, yeah, just feel free to reach out
+
+and we can share like samples over to you.
+
+Okay?
+
+Yeah, Arjun, one last thing.
+
+Can you give us a POC, Rohit?
+
+Someone in the...
+
+We can connect with Rohit.
+
+I mean, after discussing with Arjun.
+
+Maybe Arjun has to...
+
+So I will just ask one last thing.
+
+Arjun, like, do you have any use cases
+
+which is not solved currently?
+
+For customer 360.
+
+Yeah, that's the reverse question I wanted to ask you.
+
+Yes, you people are looking on this,
+
+so you might be knowing, like,
+
+what is the gap you have with now?
+
+I mean, this, the concept of Customer 360
+
+has existed for a good over 20 years.
+
+So all the matching parameters,
+
+rules and everything
+
+have been refined for a very long while.
+
+Okay.
+
+I'll let Rohit take a stab at that
+
+if anything is marked as pending
+
+or not available.
+
+So, Rajesh, the way I would put
+
+it is like our data
+
+quality standards have not been up to the
+
+mark.
+
+Okay.
+
+In a sense like
+
+as well as like the business process
+
+some examples. So an
+
+example is like when you
+
+apply a supplementary card
+
+your SSN
+
+your
+
+address
+
+form that
+
+you used to
+
+fill for
+
+applying a
+
+basic card
+
+may not
+
+ask for a
+
+complete date
+
+of birth
+
+it might
+
+just ask
+
+for a year of birth.
+
+Okay.
+
+So,
+
+so those sort of
+
+data challenges
+
+or data quality issues
+
+do exist.
+
+Like in an
+
+in an SBS
+
+sort of a card,
+
+you,
+
+you might,
+
+like,
+
+people could give
+
+their business address,
+
+people could
+
+home address
+
+and they might not be
+
+copied in the right
+
+sort of field,
+
+right?
+
+Okay.
+
+I have different fields for uh home address
+
+business address but it still might be there in any of the fields so it's not as reliable
+
+people could give po boxes as their addresses if they're using one so again not as reliable
+
+so there are those data quality challenges as well as like the business processes that were set up may not be as appropriate.
+
+And hence we are working with all of those nuances.
+
+And we have come up to a framework where our individual matching today is 99% plus accurate.
+
+Okay.
+
+99% plus accurate.
+
+Okay.
+
+Like 99.1 or 99.2 is the exact quoted number.
+
+So don't quote me
+
+on the exact number,
+
+but like it's 99%,
+
+not of 99%.
+
+So, but still the 1% gap
+
+is a big enough gap.
+
+Like if you have
+
+a hundred million customers,
+
+a 1% gap is essentially
+
+like 10 million customers.
+
+So could be, oh, sorry, it's 1 million customers.
+
+So 1 million customers could be essentially over or underlinked, right?
+
+So we're just trying to kind of navigate through all of those things
+
+because it's not humanly possible to validate each and every record.
+
+So there are aspects to matching from a perspective of that data needs to be improved from a remediation
+
+standpoint, as well as like matching framework needs to evolve from a perspective of doing
+
+better matching with the data that is available to us.
+
+Okay.
+
+So that's all of the context here.
+
+So, may I know what kind of techniques or algorithms you are using to do this matching?
+
+So I have just joined the team three months back.
+
+Okay.
+
+The team has been using
+
+string matching, fuzzy
+
+string matching algorithms
+
+to match
+
+fields like address,
+
+fields like name, fields
+
+like
+
+SSNs.
+
+And then using these codes,
+
+they have come up with a
+
+rule set.
+
+So it says, And then using these codes, they have come up with a rule set. Okay.
+
+So, which says like if let's say name is 95% plus matching,
+
+the date of birth is exactly the same, your SSN is exactly the same.
+
+It's the same individual.
+
+Okay.
+
+So, if someone...
+
+of those fields are blank then we look at probably more signals and say okay if if the name is 95%
+
+plus address is the same ssn is missing but uh mobile phone number and email are the same so
+
+it's the same person so again match so it's a rule set which is used uh what i am working on at the moment are we're trying out a gradient boosting
+
+model
+
+on this. So rather
+
+than just leveraging
+
+a rule set based framework, can we
+
+have like a machine learning model do this
+
+match for us?
+
+Then we are also leveraging
+
+AI.
+
+So, I mean like, this is the batch processing ask them to compare oh it is not a batch processing
+
+it is so so think of this like it it works it's an ongoing production process so anytime anybody applies for a card okay it I for a card and you
+
+already have an existing relationship we need to know at the time of application
+
+because if you are an existing customer we might already have all of your
+
+credit to match you as a customer, decisioning becomes easier for us.
+
+Alternatively, you can always go and change your details, right?
+
+You can go on to...
+
+Yeah, right, right.
+
+So, okay.
+
+So this is the one.
+
+So what is the accepted latency here?
+
+We are unable to hear him?
+
+Ah, yeah.
+
+Can you hear me?
+
+Yeah, Rohit, can you hear me? Yeah, Rohin, can you hear me?
+
+No, I can't hear you.
+
+Yeah, okay, I was just calling out like if there is a, so you understand at the time of setup?
+
+Maintain request? Maintain request is that essentially if somebody changes something by calling into the call center or going onto their MICA profile on the web and changing details like change their address or they can
+
+change their name in case of marriages, like female changes, change their name.
+
+So could be all of those scenarios.
+
+In that case as well, it is re-triggered as a production process.
+
+And then it matches to the best candidate keys
+
+and identifies whether there is a best match available
+
+to create the customer ID.
+
+If not, a new customer ID is assigned to the person.
+
+Okay.
+
+Okay, so there is no batch process as such unless there is a one-time load exercise or
+
+something that needs to be corrected in the back book.
+
+Most of it is a production process depending upon where there is a setup request or a maintained
+
+request.
+
+Okay, so what is the latency, I mean, accept the latency for this identification oh it's less than i think 0.03 seconds
+
+because real-time decisioning it cannot uh take a lot of time so currently you're having 0.03 seconds
+
+um again don't quote me on the numbers i'm new to the team but it's it's to the tune of that number itself yes okay yeah
+
+it's a fraction of a second for sure because it cannot take longer when you are submitting an
+
+application we can't hold you that we are still identifying to identify you that's not what can
+
+happen right that will be a bad customer experience. So what is the
+
+machine you are using for this
+
+resolving this identity?
+
+What is a machine?
+
+So it's a
+
+couch-based infrastructure.
+
+Is it BigQuery
+
+or is it Cornerstone
+
+or do you guys have something on top of this which acts as a proxy?
+
+It's a couch-based system on which this exists today.
+
+Okay.
+
+And the API is run on that to kind of do this matching.
+
+My team is specifically responsible for the data science aspect of it,
+
+the matching, like what should be the algorithm,
+
+what should be the framework, rules, like can we do a model?
+
+I am not as much close to the product aspect of it.
+
+That is where Arjun and team, Arjun and Sumit come in.
+
+Like they can explain you like the product answers of it.
+
+I can talk data about it, Like what are the issues in data?
+
+What matching frameworks do we use?
+
+Like today we use a fuzzy matching algorithm like Jaro-Winkler.
+
+We also use something like a Jaccard framework.
+
+But can we do better than Jaro-Winkler?
+
+The answer is yes.
+
+From a fuzzy matching algorithm standpoint.
+
+So what that algorithm should be, that is what my team decides.
+
+Have you tried that one with
+
+Jacquard?
+
+Yeah, yeah. We use
+
+Jacquard, we use Levinstein, we
+
+use Jaro Winkler,
+
+we use phonetic
+
+matching. We have multi
+
+of those available.
+
+So yeah, but these are all string matching algorithms.
+
+So you can match strings based on this.
+
+And then eventually, if you use these algorithms,
+
+based on these codes, you still have to come up with a rule set.
+
+Because string matching can compare names.
+
+It can compare addresses.
+
+But the rule set then will say the name is same,
+
+the address is same, and so on and so forth. So we are just evaluating what are the other techniques. I
+
+think that is where you guys are also coming in.
+
+Yeah. Actually, now I am getting it Rohit. Like Sumit was addressing this issue. This is currently what you are trying to solve, right?
+
+Right, right.
+
+So the issue, let me put it this way.
+
+So identity matching, there are essentially two issues that can occur, right?
+
+One is an over-linkage, one is an under-linkage. Over-linkage is, I, through my matching rules,
+
+linked Rama and Rajesh.
+
+Something happened and we linked two individuals together.
+
+Now, this is a bigger issue from a privacy standpoint.
+
+Which standpoint?
+
+From a privacy standpoint,
+
+like we can't expose like Rajesh, your details to Rama
+
+or alternatively.
+
+Right.
+
+So over-linkage is a big issue.
+
+It's a big operational risk.
+
+Yes.
+
+Then the other issue would be that our matching is so loose
+
+that Rohit applied for two cards
+
+and we assigned two different
+
+customer ideas to do that okay right now this is an issue but may not be as much of a privacy risk as
+
+as much as a decision risk uh like risk from a uh fraud perspective could be high rovit did a fraud
+
+on his first card applied again i could not identify him so he can did a fraud on his first card, applied again. I could not identify him, so
+
+he can do a fraud again. So again, it's a big risk for the business. So from a matching
+
+standpoint, we have to balance out between over and under linkage. What we call as false
+
+positives and false negatives. So we have to manage because matching can never be 100 accurate
+
+primarily just because the data quality is not always 100 accurate and even if we are improving
+
+quality controls on the latest data we are 150 year old company right so the back book would
+
+always have some nuances to it right so so we can be at 99.9, but
+
+achieving 100 is tough.
+
+But 99.9, when
+
+we say, we are
+
+there from an overlinked standpoint.
+
+So we have,
+
+what we have done in the US
+
+is
+
+We have two identifiers.
+
+One is a customer ID.
+
+One is a deterministic ID.
+
+Okay.
+
+Customer ID is a probabilistically matched ID.
+
+Wherein if Rohit Ahuja or and there is another person Rohit Ahuja.
+
+I would probabilistically match if their national ID is matching.
+
+Date of birth is the same.
+
+I can safely assume that Rohit and Rohit is a typo.
+
+I can possibly assume the same customer ID.
+
+But deterministically, they may not match.
+
+Because we are not 100% sure.
+
+Rohita could be a female.
+
+And this happens.
+
+Like we have seen cases where we had Ankit Yadav and Ankitayadav.
+
+Because the name matching for them would be very high schools
+
+to this. Right? And they were
+
+linked. But essentially
+
+they are two different people.
+
+So deterministically
+
+when we match, we
+
+want everything to be accurate.
+
+Which is SSN should be the same, the name should
+
+be the same, the date should be the
+
+same. Again,
+
+I'm just oversimplifying things.
+
+Based on the nuances and data, we have come up with a set of rules. There are a set of
+
+five to six rules that run and deterministically match. But at least when we are matching that,
+
+we are 100% sure it is the same individual. So we are not creating any overlinkages. But when you do that,
+
+we are increasing underlinkage in the system.
+
+Right?
+
+Because probabilistically, if you are matching something,
+
+there is a very high chance it is the same individual.
+
+But because all the data is not the same,
+
+deterministically, we are not matching there.
+
+So that's all the background of C360 and the matching that goes behind.
+
+I am not fully privy to like how knowledge graphs work and how they can help.
+
+So that is why all of those questions were coming to you guys.
+
+Like, what is it that is trying to change?
+
+I mean, what context we have is like what you have explained now.
+
+So in order to solve with somebody, they apply for a new card and if the data is linking with
+
+the existing customer details, then we have to create a relationship between them.
+
+So that's what like this
+
+already happens today.
+
+Right? So it's not that
+
+it's not happening. So
+
+that is why I think there were so many questions
+
+from Arjun and me. Like
+
+do you guys fundamentally believe
+
+that if we move away from
+
+couch base and a set of
+
+rules and we move to a knowledge graph sort of a solution, would this be a better solution?
+
+Right?
+
+Yeah.
+
+I think that is what the conversation would be around.
+
+Yeah, then it has to be like comparison between the existing rules or
+
+techniques with respect to the knowledge graph.
+
+Exactly.
+
+Rogit, do you have some
+
+training
+
+data set for this?
+
+Unfortunately, no.
+
+That is the biggest challenge
+
+in moving to a model
+
+because we don't have
+
+tagged accounts. We can't go and check from our
+
+customers are we tagging you correctly or not. No, then how are you arriving at this 99%?
+
+It's based on manual validation of a sample of records. So you may be having this manual validated records, right?
+
+Yes, those are available, but those would be very small volumes.
+
+Not enough to train a good model, like possibly a thousand.
+
+Just for testing purpose, we can have it, right?
+
+Oh, yes, for sure.
+
+For sure, yes.
+
+Just can you share that one like and we will see like whether
+
+through knowledge graph we will be able to solve that
+
+I mean
+
+so how how are you thinking about testing it?
+
+Like the knowledge graph, does it identify the same people?
+
+Yeah.
+
+It is connecting with the same people.
+
+Like without having this, I mean, like over-connecting or under-connecting.
+
+But it's tough to say then as well. No, manually validated the data set.
+
+We can able to explain those things.
+
+This has to be linked and this should not be linked.
+
+Yeah, so exactly.
+
+See, we are okay to share the data.
+
+And it will be good if you could share some context around like
+
+how would the knowledge graphs work and how it will solve.
+
+And that's where we'll be able to provide you more additional information
+
+because generally, like I said, the issue that we are facing
+
+is the corner cases.
+
+So if you understand like if you are already 99.2, 99.3% accurate,
+
+these are coroner cases that we are missing.
+
+So what are those coroner cases?
+
+The coroner cases are, think of family relations, father-son relations.
+
+Robert Downey, Robert Downey Jr.
+
+Living at the same address.
+
+One person has an SSM, the other person has an SSM missing.
+
+Do you link them? Do you not link them?
+
+Right?
+
+It could be twins with very similar names.
+
+Rohit Ahuja, Mohit Ahuja, same date of birth, same address.
+
+One has a national ID, the other has the national ID missing.
+
+Mm-hmm.
+
+The national ID cannot be same, right?
+
+For both.
+
+Ideally, it cannot be same, but it can be missing, right?
+
+Like, ID tech quality standards were not as high in the past.
+
+So, SSN was not the most...
+
+It wasn't a mandatory field back then, right?
+
+So, unless we solve for that, like, by remediating
+
+or asking the customer about their national ID,
+
+you can't really take a decision because string matching will give a very high score to Rohitahuja versus
+
+Rohitahuja right so yeah that's what like the knowledge graph can solve this kind of
+
+problems like who is the father and who is the son and where they live okay if they both
+
+lives like then we can even have same address.
+
+So those kinds of connections
+
+we can able to establish in knowledge graph.
+
+And we can trace back.
+
+Yeah, so I didn't,
+
+that is where our leadership would have discussed.
+
+Yeah, right, right.
+
+Can we evaluate knowledge graphs
+
+and see if this performs better?
+
+Yes.
+
+That's my understanding of the context that we have been discussing.
+
+Yeah, this is the problems we are trying to solve.
+
+Okay, my question, like I'm okay to share the data,
+
+that is not a problem, but my question essentially would be,
+
+do you believe like it will be better than the LLMs as
+
+well which is almost equivalent to saying a person is manually reviewing two records.
+
+No but the LLM I mean like it has its own limitations
+
+like you cannot like solve some complex, find out complex relations.
+
+To some extent, yeah, it will.
+
+But this will be having a deterministic linkage between like person to person and why it is.
+
+And those things are just like predefined paths.
+
+Okay, it has to go that way.
+
+But LLM, it's again a probabilistic in nature, right?
+
+So it will predict like what will be the next
+
+and what is that if you are going to ask for a classification problem,
+
+again it will be a probability-based output.
+
+It's a probability-based output.
+
+Yeah, but whereas this knowledge graph will be of more of a deterministic thing. Deterministic thing in the terms of relationship, how this one person is related
+
+to other person, like what are the connections between them. So, those traversals can happen,
+
+like it can travel like multiple hops, like maybe two hops or three hops and see how this linking has happened.
+
+Okay. Okay, that's fair. So you guys can try that out. I believe you already have access
+
+to both of the Loomi tables. So I'm not sure like exactly what is needed.
+
+from my team from a data standpoint
+
+perspective.
+
+If you want us to validate whether
+
+your encryption and decryption is working fine,
+
+we can work towards probably
+
+checking out 10-15 records.
+
+Yeah, that is one thing.
+
+Yeah, that is one thing,
+
+Rohit. Another one is
+
+like as we discussed now,
+
+that is like the manually
+
+tagged or manually verified
+
+data is there, right?
+
+Whether it has to be linked or whether it's not linked.
+
+Yeah, that thing can talk.
+
+Yeah, those things.
+
+Manually validated in that, yeah, we can share that with you. Okay.
+
+Actually, we're just looking at some valid values in the columns, right, so that we can actually
+
+mentally map ourselves on how the data looks and how
+
+can we solve so currently currently that perspective on the e2 data we are not getting
+
+e2 data yeah it would not be that accurate it would be a test environment is what I'm understanding. Yeah. So.
+
+Okay.
+
+So do you have access to E3 data or no?
+
+E3 data per se, since we are already, Ida is a batch platform that runs models and everything.
+
+I think as a service ID, I think there were some modelers who had requested it.
+
+Okay. So I think they have it for, I think there were some modelers who had requested it. Okay.
+
+So I think they have it for some tables, not for all.
+
+But we are not sure.
+
+Okay.
+
+Yeah.
+
+See, I, like I said, I am new to the team and this is all like privacy sensitive data.
+
+You can understand this is all PII that we are working with.
+
+Let me just check on what is the best way to.
+
+Sorry about that.
+
+But what is the best way to kind of provide this data to you guys?
+
+Okay, what if there are any approvals specifically needed?
+
+And that is why Arjun would have been looped in because he can help kind of get this done.
+
+My team can help you like answering any specific questions on the data
+
+or any specific data requirements.
+
+Like we discussed, the manual tag accounts,
+
+my team can help you provide.
+
+But I think because you guys are in the US,
+
+just work with Arjun in terms of
+
+what is the best way for you to source this data.
+
+Okay.
+
+And accordingly, whatever comes to my team,
+
+I'll share it with you guys.
+
+So that should not be an issue.
+
+So we are in India only.
+
+We are based out of Bangalore.
+
+Oh, okay.
+
+Perfect.
+
+Then though we should connect in the morning.
+
+My team can probably help get some information. But again, I think we would
+
+need some sort of approvals for you guys to kind of have access to this data. That's my understanding,
+
+but again, I could be wrong or take it with a pinch of salt. I'm new to the team. Okay.
+
+Yeah, that's fine.
+
+We can share some
+
+emails to get the approvals if it is needed.
+
+Yes.
+
+If there's any IAQ or something that you have
+
+you do pass it across,
+
+we can raise it for us
+
+or ourselves.
+
+Okay.
+
+Yeah.
+
+Yeah, then we'll connect tomorrow in the morning.
+
+Yeah.
+
+Yeah, okay.
+
+Thank you very much. Thank you very much. connect tomorrow in the morning yeah yeah yeah okay yeah okay thank you guys thank you How did he match?
+
+I didn't know that.
+
+I didn't know that.
+
+I didn't know how to match.
+
+I didn't know how to match.
+
+I didn't know how to generate data.
+
+I didn't know if we generate data. We can't get data.
+
+But if we tell Gautam,
+
+we have access to AQ.
+
+No.
+
+I was told you first,
+
+that we have access to decryption and access.
+
+If you ask that,
+
+you have value.
+
+You have to say that, you have to say that, problem
+
+the
+
+the
+
+the
